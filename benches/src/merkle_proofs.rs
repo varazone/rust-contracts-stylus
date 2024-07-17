@@ -71,28 +71,10 @@ pub async fn bench() -> eyre::Result<()> {
     .map(|h| h.into())
     .to_vec();
 
-    let receipts = vec![
-        (
-            "verify()",
-            receipt!(contract.verify(proof.clone(), root.into(), leaf.into()))?,
-        ),
-        (
-            "verify()",
-            receipt!(contract.verify(proof.clone(), root.into(), leaf.into()))?,
-        ),
-        (
-            "verify()",
-            receipt!(contract.verify(proof.clone(), root.into(), leaf.into()))?,
-        ),
-        (
-            "verify()",
-            receipt!(contract.verify(proof.clone(), root.into(), leaf.into()))?,
-        ),
-        (
-            "verify()",
-            receipt!(contract.verify(proof.clone(), root.into(), leaf.into()))?,
-        ),
-    ];
+    let receipts = vec![(
+        "verify()",
+        receipt!(contract.verify(proof, root.into(), leaf.into()))?,
+    )];
 
     // Calculate the width of the longest function name.
     let max_name_width = receipts
