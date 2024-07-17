@@ -3,7 +3,7 @@ extern crate alloc;
 
 use alloc::vec::Vec;
 
-use alloy_primitives::B256;
+use alloy_primitives::{FixedBytes, B256};
 use crypto::{
     merkle::{self, Verifier},
     KeccakBuilder,
@@ -65,8 +65,7 @@ sol_storage! {
 #[external]
 impl VerifierContract {
     pub fn verify(&self, proof: Vec<B256>, root: B256, leaf: B256) -> bool {
-        let proof: Vec<[u8; 32]> = proof.into_iter().map(|m| *m).collect();
-        verify_native(&proof, *root, *leaf)
+        verify_native(&proof, root, leaf)
     }
 
     pub fn verify_non_native(
@@ -97,11 +96,7 @@ impl VerifierContract {
     }
 }
 
-fn verify_native(
-    proof: &[[u8; 32]],
-    root: [u8; 32],
-    mut leaf: [u8; 32],
-) -> bool {
+fn verify_native(proof: &[FixedBytes<32>], root: B256, mut leaf: B256) -> bool {
     for &hash in proof {
         leaf = commutative_hash_pair(leaf, hash);
     }
@@ -109,10 +104,10 @@ fn verify_native(
     leaf == root
 }
 
-fn commutative_hash_pair(mut a: [u8; 32], mut b: [u8; 32]) -> [u8; 32] {
+fn commutative_hash_pair(mut a: B256, mut b: B256) -> B256 {
     if a > b {
         core::mem::swap(&mut a, &mut b);
     }
 
-    *keccak([a, b].concat())
+    keccak([a, b].concat())
 }
