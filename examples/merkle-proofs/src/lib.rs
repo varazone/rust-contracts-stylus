@@ -11,6 +11,7 @@ use crypto::{
 use stylus_proc::SolidityError;
 use stylus_sdk::{
     alloy_sol_types::sol,
+    crypto::keccak,
     prelude::{entrypoint, external, sol_storage},
 };
 
@@ -65,6 +66,16 @@ sol_storage! {
 impl VerifierContract {
     pub fn verify(&self, proof: Vec<B256>, root: B256, leaf: B256) -> bool {
         let proof: Vec<[u8; 32]> = proof.into_iter().map(|m| *m).collect();
+        verify_native(&proof, *root, *leaf)
+    }
+
+    pub fn verify_non_native(
+        &self,
+        proof: Vec<B256>,
+        root: B256,
+        leaf: B256,
+    ) -> bool {
+        let proof: Vec<[u8; 32]> = proof.into_iter().map(|m| *m).collect();
         Verifier::<KeccakBuilder>::verify(&proof, *root, *leaf)
     }
 
@@ -84,4 +95,24 @@ impl VerifierContract {
             &leaves,
         )?)
     }
+}
+
+fn verify_native(
+    proof: &[[u8; 32]],
+    root: [u8; 32],
+    mut leaf: [u8; 32],
+) -> bool {
+    for &hash in proof {
+        leaf = commutative_hash_pair(leaf, hash);
+    }
+
+    leaf == root
+}
+
+fn commutative_hash_pair(mut a: [u8; 32], mut b: [u8; 32]) -> [u8; 32] {
+    if a > b {
+        core::mem::swap(&mut a, &mut b);
+    }
+
+    *keccak([a, b].concat())
 }
