@@ -68,7 +68,7 @@ sol! {
             uint8 v,
             bytes32 r,
             bytes32 s
-        ) returns (bytes recovered);
+        ) returns (bytes32 recovered);
     }
 }
 
