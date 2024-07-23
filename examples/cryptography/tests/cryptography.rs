@@ -65,12 +65,15 @@ async fn recovers_from_signature(alice: Account) -> Result<()> {
     let contract = Crypto::new(contract_addr, &alice.wallet);
 
     let h = eip191_hash_message(MESSAGE);
-    println!("{:?}", h);
+    println!("h {:?}", h);
     let hash = hash(&*MESSAGE);
+    println!("hash {:?}", hash);
     let signature = alice.sign_hash(&hash).await;
+    println!("signature {:?}", signature);
 
     let recovered =
         signature.recover_address_from_msg(MESSAGE).expect("should recover");
+    println!("recovered {:?}", recovered);
     assert_eq!(recovered, alice.address());
 
     let Crypto::recover_0Return { recovered } =
