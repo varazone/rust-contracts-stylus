@@ -11,7 +11,6 @@ use alloy::{
 };
 use e2e::{Account, Revert};
 use eyre::Result;
-use stylus_sdk::crypto::keccak;
 
 mod abi;
 
