@@ -100,8 +100,7 @@ async fn recovers_from_signature(alice: Account) -> Result<()> {
         address!("0000000000000000000000000000000000000001");
 
     let contract = Ecrecover::new(ECRECOVER_ADDR, &alice.wallet);
-    let Ecrecover::ecrecoverReturn { recovered } =
-        contract.ecrecover(hash, v, r.into(), s.into()).call().await?;
+    let r = contract.ecrecover(hash, v, r.into(), s.into()).call().await;
     println!("recovered {:?}", recovered);
     // let Crypto::recover_2Return { recovered } =
     //     contract.recover_2(hash, v, r.into(), s.into()).call().await?;
