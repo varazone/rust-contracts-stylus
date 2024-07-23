@@ -3,8 +3,8 @@
 use abi::Crypto;
 use alloy::{
     primitives::{
-        eip191_hash_message, fixed_bytes, utils::eip191_message, Address,
-        FixedBytes, B256,
+        address, eip191_hash_message, fixed_bytes, utils::eip191_message,
+        Address, FixedBytes, B256,
     },
     sol,
     sol_types::SolConstructor,
@@ -59,6 +59,22 @@ const MESSAGE: FixedBytes<32> = fixed_bytes!(
 //     Ok(())
 // }
 
+sol! {
+    #[sol(rpc)]
+    contract Ecrecover {
+        function ecrecover(
+            bytes32 hash,
+            uint8 v,
+            bytes32 r,
+            bytes32 s
+        ) returns (address recovered);
+    }
+}
+
+type Input = sol! {
+    tuple(bytes32,uint8,bytes32,bytes32)
+};
+
 #[e2e::test]
 async fn recovers_from_signature(alice: Account) -> Result<()> {
     let contract_addr = deploy(&alice).await?;
@@ -73,14 +89,22 @@ async fn recovers_from_signature(alice: Account) -> Result<()> {
 
     let recovered =
         signature.recover_address_from_msg(MESSAGE).expect("should recover");
-    println!("recovered {:?}", recovered);
     assert_eq!(recovered, alice.address());
+    println!("recovered {:?}", recovered);
 
     let v = signature.v().to_u64() as u8;
     let r = signature.r();
     let s = signature.s();
-    let Crypto::recover_2Return { recovered } =
-        contract.recover_2(hash, v, r.into(), s.into()).call().await?;
+
+    const ECRECOVER_ADDR: Address =
+        address!("0000000000000000000000000000000000000001");
+
+    let contract = Ecrecover::new(ECRECOVER_ADDR, &alice.wallet);
+    let Ecrecover::ecrecoverReturn { recovered } =
+        contract.ecrecover(hash, v, r.into(), s.into()).call().await?;
+    println!("recovered {:?}", recovered);
+    // let Crypto::recover_2Return { recovered } =
+    //     contract.recover_2(hash, v, r.into(), s.into()).call().await?;
 
     assert_eq!(alice.address(), recovered);
 
