@@ -67,7 +67,7 @@ async fn recovers_from_signature(alice: Account) -> Result<()> {
 
     let msg = eip191_message(MESSAGE);
     println!("{:?}", msg);
-    let h = keccak(msg);
+    let h = alloy_primitives::keccak256(msg);
     println!("{:?}", h);
     let hash = hash(&*MESSAGE);
     let signature = alice.sign_hash(&hash).await;
