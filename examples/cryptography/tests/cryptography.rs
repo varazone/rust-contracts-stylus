@@ -62,6 +62,7 @@ const MESSAGE: FixedBytes<32> = fixed_bytes!(
 sol! {
     #[sol(rpc)]
     contract Ecrecover {
+        #[derive(Debug)]
         function ecrecover(
             bytes32 hash,
             uint8 v,
@@ -101,11 +102,11 @@ async fn recovers_from_signature(alice: Account) -> Result<()> {
 
     let contract = Ecrecover::new(ECRECOVER_ADDR, &alice.wallet);
     let r = contract.ecrecover(hash, v, r.into(), s.into()).call().await;
-    println!("recovered {:?}", recovered);
+    println!("recovered {:?}", r);
     // let Crypto::recover_2Return { recovered } =
     //     contract.recover_2(hash, v, r.into(), s.into()).call().await?;
 
-    assert_eq!(alice.address(), recovered);
+    assert_eq!(alice.address(), r.unwrap().recovered);
 
     Ok(())
 }
