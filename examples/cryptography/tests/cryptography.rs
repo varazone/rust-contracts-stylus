@@ -76,8 +76,11 @@ async fn recovers_from_signature(alice: Account) -> Result<()> {
     println!("recovered {:?}", recovered);
     assert_eq!(recovered, alice.address());
 
-    let Crypto::recover_0Return { recovered } =
-        contract.recover_0(hash, signature.as_bytes().into()).call().await?;
+    let v = signature.v().to_u64() as u8;
+    let r = signature.r();
+    let s = signature.s();
+    let Crypto::recover_2Return { recovered } =
+        contract.recover_2(hash, v, r.into(), s.into()).call().await?;
 
     assert_eq!(alice.address(), recovered);
 
